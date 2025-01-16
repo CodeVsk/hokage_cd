@@ -24,23 +24,8 @@ func (Application) TableName() string {
 	return "application"
 }
 
-func (a *Application) ToModel(application entity.Application) Application {
-	return Application {
-		ID: application.ID,
-		Name: application.Name,
-		Slug: application.Slug,
-		RepositoryUrl: application.RepositoryUrl,
-		IsEnabled: application.IsEnabled,
-		AutoRollback: application.AutoRollback,
-		CreatedAt: application.CreatedAt,
-		CreatedBy: application.CreatedBy,
-		UpdatedAt: application.UpdatedAt,
-		UpdatedBy: application.UpdatedBy,
-	}
-}
-
-func (a *Application) ToEntity(application Application) entity.Application {
-	return entity.Application {
+func NewApplication(application *entity.Application) *Application {
+	return &Application {
 		ID: application.ID,
 		Name: application.Name,
 		Slug: application.Slug,
