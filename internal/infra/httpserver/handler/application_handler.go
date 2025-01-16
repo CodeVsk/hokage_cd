@@ -29,7 +29,7 @@ func (a *ApplicationHandler) Create(c *gin.Context) {
 	
 	createApplication := usecase.NewCreateApplicationUseCase(a.ApplicationRepository)
 	if err := createApplication.Execute(input); err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
 		return
 	}
 
