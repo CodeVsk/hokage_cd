@@ -14,10 +14,14 @@ func NewHttpServer(addr string) *HttpServer {
 	return &HttpServer{
 		Server: gin.Default(),
 		Addr: addr,
+		Handlers: make(map[string]map[string]gin.HandlerFunc),
 	}
 }
 
-func (h *HttpServer) RegisterHandler(method string, route string, handler gin.HandlerFunc) {
+func (h *HttpServer) RegisterHandler(route string, method string, handler gin.HandlerFunc) {
+	if _, exists := h.Handlers[route]; !exists {
+		h.Handlers[route] = make(map[string]gin.HandlerFunc)
+	}
 	h.Handlers[route][method] = handler
 }
 

@@ -25,7 +25,7 @@ func main() {
 
 	applicationHandler := handler.NewApplicationHandler(applicationRepository)
 
-	server.RegisterHandler("POST", "create", applicationHandler.Create)
+	server.RegisterHandler("create", "POST", applicationHandler.Create)
 
 	server.Start()
 }
