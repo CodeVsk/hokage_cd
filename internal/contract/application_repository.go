@@ -6,4 +6,5 @@ import (
 
 type ApplicationRepository interface {
 	Create(model *model.Application) error
+	GetBySlug(slug string) (*model.Application, error)
 }

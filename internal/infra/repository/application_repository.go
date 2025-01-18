@@ -21,3 +21,13 @@ func (r *DbApplicationRepository) Create(model *model.Application) error {
 
 	return nil
 }
+
+func (r *DbApplicationRepository) GetBySlug(slug string) (*model.Application, error) {
+	var application *model.Application
+	result := r.DB.Where("slug = ?", slug).First(&application)
+	if(result.Error != nil){
+		return nil, result.Error
+	}
+
+	return application, nil
+}
