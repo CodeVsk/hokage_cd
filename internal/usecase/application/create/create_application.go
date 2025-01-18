@@ -5,6 +5,7 @@ import (
 	"github.com/codevsk/codevsk_golang_cd/internal/dto"
 	"github.com/codevsk/codevsk_golang_cd/internal/entity"
 	"github.com/codevsk/codevsk_golang_cd/internal/infra/orm/model"
+	"github.com/codevsk/codevsk_golang_cd/pkg/result"
 )
 
 type CreateApplicationUseCase struct {
@@ -17,17 +18,21 @@ func NewCreateApplicationUseCase(ApplicationRepository contract.ApplicationRepos
 	}
 }
 
-func (c *CreateApplicationUseCase) Execute(input dto.CreateApplicationInputDTO) error {
+func (c *CreateApplicationUseCase) Execute(input dto.CreateApplicationInputDTO) (result.Result) {
 	application , err := entity.NewApplication(input.Name, input.Slug, input.Repository_url, "master")
 	if(err != nil){
-		return err
+		return result.NewValidationResult(err.Error())
+	}
+
+	if _, err := c.ApplicationRepository.GetBySlug(application.Slug); err == nil {
+		return result.NewConflictResult()
 	}
 
 	model := model.NewApplication(application)
 
 	if err := c.ApplicationRepository.Create(model); err != nil {
-		return err
+		return result.NewInternalResult(err)
 	}
 
-	return nil
+	return result.NewCreatedResult()
 }
