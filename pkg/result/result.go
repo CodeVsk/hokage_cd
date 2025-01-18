@@ -55,6 +55,13 @@ func NewValidationResult(message string) Result {
 	}
 }
 
+func NewConflictResult() Result {
+	return Result{
+		StatusCode: Conflict,
+		Body:       Body{},
+	}
+}
+
 func NewInternalResult(err error) Result {
 	return Result{
 		StatusCode: Internal,
