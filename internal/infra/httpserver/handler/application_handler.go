@@ -23,15 +23,12 @@ func (a *ApplicationHandler) Create(c *gin.Context) {
 	var input dto.CreateApplicationInputDTO
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.String(http.StatusBadRequest, "Body is invalid!")
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	
 	createApplication := usecase.NewCreateApplicationUseCase(a.ApplicationRepository)
-	if err := createApplication.Execute(input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
-		return
-	}
+	result := createApplication.Execute(input);
 
-	c.JSON(http.StatusOK, gin.H{"message": "Application created succeffully!"})
+	c.JSON(int(result.StatusCode), result.Body)
 }
