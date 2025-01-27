@@ -3,21 +3,23 @@ package result
 type ResultType int
 
 const (
-	Success    ResultType = 200
-	Created    ResultType = 201
-	NoContent  ResultType = 204
-	BadRequest ResultType = 400
-	Conflict   ResultType = 409
-	Internal   ResultType = 500
+	Success             ResultType = 200
+	Created             ResultType = 201
+	NoContent           ResultType = 204
+	BadRequest          ResultType = 400
+	Conflict            ResultType = 409
+	UnprocessableEntity ResultType = 422
+	Internal            ResultType = 500
 )
 
 type Metadata struct {
-	TotalPages int `json:"totalPages,omitempty"`
+	Page  int `json:"page,omitempty"`
+	Limit int `json:"limit,omitempty"`
 }
 
 type Body struct {
 	Message  string    `json:"message,omitempty"`
-	Value    any       `json:"value,omitempty"`
+	Data     any       `json:"data,omitempty"`
 	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
@@ -27,13 +29,14 @@ type Result struct {
 	Errors     error
 }
 
-func NewSuccessResult(value any, totalPages int) Result {
+func NewSuccessResult(data any, page int, limitPages int) Result {
 	return Result{
 		StatusCode: Success,
 		Body: Body{
-			Value: value,
+			Data: data,
 			Metadata: &Metadata{
-				TotalPages: totalPages,
+				Page:  page,
+				Limit: limitPages,
 			},
 		},
 	}
@@ -46,9 +49,25 @@ func NewCreatedResult() Result {
 	}
 }
 
-func NewValidationResult(message string) Result {
+func NewNoContentResult() Result {
+	return Result{
+		StatusCode: NoContent,
+		Body:       Body{},
+	}
+}
+
+func NewBadRequestResult(message string) Result {
 	return Result{
 		StatusCode: BadRequest,
+		Body: Body{
+			Message: message,
+		},
+	}
+}
+
+func NewValidationResult(message string) Result {
+	return Result{
+		StatusCode: UnprocessableEntity,
 		Body: Body{
 			Message: message,
 		},

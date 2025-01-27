@@ -2,11 +2,11 @@
 package main
 
 import (
-	httpserver "github.com/codevsk/codevsk_golang_cd/internal/infra/httpServer"
+	http "github.com/codevsk/codevsk_golang_cd/internal/infra/httpServer"
 	"github.com/codevsk/codevsk_golang_cd/internal/infra/httpserver/handler"
 	"github.com/codevsk/codevsk_golang_cd/internal/infra/orm"
 	"github.com/codevsk/codevsk_golang_cd/internal/infra/orm/migration"
-	"github.com/codevsk/codevsk_golang_cd/internal/infra/repository"
+	"github.com/codevsk/codevsk_golang_cd/internal/infra/orm/uow"
 )
 
 func main() {
@@ -19,13 +19,24 @@ func main() {
 		panic(err)
 	}
 
-	applicationRepository := repository.NewApplicationRepository(db)
 
-	server := httpserver.NewHttpServer(":9090")
+	unitOfWork, err := uow.NewUnitOfWork(db)
+	if err != nil {
+		panic(err)
+	}
 
-	applicationHandler := handler.NewApplicationHandler(applicationRepository)
+	server := http.NewHttpServer(":9090")
 
-	server.RegisterHandler("create", "POST", applicationHandler.Create)
+	applicationHandler := handler.NewApplicationHandler(unitOfWork)
+	
+	server.RegisterHandler("application/:id", "GET", applicationHandler.GetById)
+	server.RegisterHandler("application/create", "POST", applicationHandler.Create)
+	server.RegisterHandler("application/:id", "PATCH", applicationHandler.Update)
+	server.RegisterHandler("application/:id", "DELETE", applicationHandler.Delete)
+	
+	deploymentHandler := handler.NewDeploymentHandler(unitOfWork)
+
+	server.RegisterHandler("deployment/publish", "POST", deploymentHandler.Publish)
 
 	server.Start()
 }

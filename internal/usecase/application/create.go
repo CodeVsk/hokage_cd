@@ -1,20 +1,20 @@
 package usecase
 
 import (
-	"github.com/codevsk/codevsk_golang_cd/internal/contract"
 	"github.com/codevsk/codevsk_golang_cd/internal/dto"
 	"github.com/codevsk/codevsk_golang_cd/internal/entity"
 	"github.com/codevsk/codevsk_golang_cd/internal/infra/orm/model"
+	"github.com/codevsk/codevsk_golang_cd/internal/infra/orm/uow"
 	"github.com/codevsk/codevsk_golang_cd/pkg/result"
 )
 
 type CreateApplicationUseCase struct {
-	ApplicationRepository contract.ApplicationRepository
+	Uow uow.UnitOfWork
 }
 
-func NewCreateApplicationUseCase(ApplicationRepository contract.ApplicationRepository) *CreateApplicationUseCase {
+func NewCreateApplicationUseCase(uow uow.UnitOfWork) *CreateApplicationUseCase {
 	return &CreateApplicationUseCase{
-		ApplicationRepository: ApplicationRepository,
+		Uow: uow,
 	}
 }
 
@@ -24,13 +24,19 @@ func (c *CreateApplicationUseCase) Execute(input dto.CreateApplicationInputDTO) 
 		return result.NewValidationResult(err.Error())
 	}
 
-	if _, err := c.ApplicationRepository.GetBySlug(application.Slug); err == nil {
+	if _, err := c.Uow.GetApplicationRepository().GetBySlug(application.Slug); err == nil {
 		return result.NewConflictResult()
 	}
 
-	model := model.NewApplication(application)
+	model := model.ToApplicationModel(application)
 
-	if err := c.ApplicationRepository.Create(model); err != nil {
+	if err := c.Uow.GetApplicationRepository().Create(model); err != nil {
+		c.Uow.Rollback()
+
+		return result.NewInternalResult(err)
+	}
+
+	if err := c.Uow.Commit(); err != nil {
 		return result.NewInternalResult(err)
 	}
 
